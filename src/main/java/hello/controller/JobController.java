@@ -2,36 +2,56 @@ package hello.controller;
 
 import javax.validation.Valid;
 
-import hello.model.Customer;
-import hello.model.Employee;
-import hello.repository.CustomerRepository;
-import hello.repository.EmployeeRepository;
+import hello.model.EmployeeAssignment;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
 import hello.model.Job;
 import hello.repository.JobRepository;
+import hello.repository.CustomerRepository;
+import hello.repository.EmployeeRepository;
+import hello.repository.EmployeeAssignmentRepository;
+
+import java.util.List;
+
 
 @CrossOrigin
 @RestController
 @RequestMapping(path = "job")
 public class JobController {
-
     @Autowired
     private JobRepository jobRepository;
-
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
-    @Autowired
     private CustomerRepository customerRepository;
+    private EmployeeRepository employeeRepository;
+    private EmployeeAssignmentRepository employeeAssignmentRepository;
 
     @PostMapping("")
-    public @ResponseBody
-    Job createJob(@Valid @RequestBody Job job) {
-        return jobRepository.save(job);
+    public @ResponseBody Job createJob(@Valid @RequestBody Job job) {
+        String error = "";
+        if(job.getDateOpened().getTime() < System.currentTimeMillis()){
+            error += "Job cannot be opened in the past\n";
+        }
+        if(job.getDateOpened().getTime() > job.getDateClosed().getTime()){
+            error += "Job open date cannot be after the job close date\n";
+        }
+        if(job.getDescription().equals(null) || job.getDescription().equals("")){
+            error += "Job description cannot be empty\n";
+        }
+        if(job.getAvailable().equals(null)){
+            job.setAvailable(false);
+        }
+        if(!job.getCustomerID().equals(null)){
+            if(!customerRepository.findOne(job.getCustomerID()).equals(null)){
+                error += "Customer does not exist\n";
+            }
+        }
+        if(error.equals("")){
+            return jobRepository.save(job);
+        }
+        else{
+            return job;
+        }
     }
 
     @GetMapping(path = {"", "/all"})
@@ -43,7 +63,7 @@ public class JobController {
     @GetMapping("{id}")
     public ResponseEntity<Job> getJobById(@PathVariable(value = "id") Long jobId) {
         Job job = jobRepository.findOne(jobId);
-        if (job == null) {
+        if(job == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok().body(job);
@@ -53,71 +73,42 @@ public class JobController {
     public ResponseEntity<Job> updateJob(@PathVariable(value = "id") Long jobId,
                                          @Valid @RequestBody Job jobDetails) {
         Job job = jobRepository.findOne(jobId);
-        if (job == null) {
+        if(job == null) {
             return ResponseEntity.notFound().build();
         }
 
-        Job updatedJob = jobRepository.save(job.merge(jobDetails));
-        return ResponseEntity.ok(updatedJob);
-    }
-
-    // add an employee to a job
-    @PutMapping("{id}/employee/{employeeId}")
-    public ResponseEntity<Job> addEmployeeToJob(
-            @PathVariable(value = "id") Long jobId,
-            @PathVariable(value = "employeeId") Long employeeId
-    ) {
-        Job job = jobRepository.findOne(jobId);
-        if (job == null) {
-            return ResponseEntity.notFound().build();
+        String error = "";
+        if(job.getDateOpened().getTime() < System.currentTimeMillis()){
+            error += "Job cannot be opened in the past\n";
         }
-        Employee employee = employeeRepository.findOne(employeeId);
-        if (employee == null) {
-            return ResponseEntity.notFound().build();
+        if(job.getDateOpened().getTime() > job.getDateClosed().getTime()){
+            error += "Job open date cannot be after the job close date\n";
         }
-
-        job.getEmployees().add(employee);
-
-        Job updatedJob = jobRepository.save(job);
-
-        return ResponseEntity.ok(updatedJob);
-    }
-
-    // add an employee to a job
-    @PutMapping("{id}/customer/{customerId}")
-    public ResponseEntity<Job> addCustomerToJob(
-            @PathVariable(value = "id") Long jobId,
-            @PathVariable(value = "customerId") Long customerId
-    ) {
-        Job job = jobRepository.findOne(jobId);
-        if (job == null) {
-            return ResponseEntity.notFound().build();
+        if(job.getDescription().equals(null) || job.getDescription().equals("")){
+            error += "Job description cannot be empty";
         }
-        Customer customer = customerRepository.findOne(customerId);
-        if (customer == null) {
-            return ResponseEntity.notFound().build();
+        if(job.getAvailable().equals(null)){
+            job.setAvailable(false);
+        }
+        if(!job.getCustomerID().equals(null)){
+            if(!customerRepository.findOne(job.getCustomerID()).equals(null)){
+                error += "Customer does not exist\n";
+            }
         }
 
-        job.setCustomer(customer);
-
-        Job updatedJob = jobRepository.save(job);
-
-        return ResponseEntity.ok(updatedJob);
-    }
-
-    // remove an employee from a job TODO
-    @DeleteMapping("{id}/employee/{employeeId}")
-    public ResponseEntity<Job> deleteEmployeeFromJob(
-            @PathVariable(value = "id") Long jobId,
-            @PathVariable(value = "employeeId") Long employeeId
-    ) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(null);
+        if(error.equals("")){
+            Job updatedEmployee = jobRepository.save(job.merge(jobDetails));
+            return ResponseEntity.ok(updatedEmployee);
+        }
+        else{
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<Job> deleteJob(@PathVariable(value = "id") Long jobId) {
         Job job = jobRepository.findOne(jobId);
-        if (job == null) {
+        if(job == null) {
             return ResponseEntity.notFound().build();
         }
 
