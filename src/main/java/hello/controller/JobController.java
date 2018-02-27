@@ -34,7 +34,31 @@ public class JobController {
     @PostMapping("")
     public @ResponseBody
     Job createJob(@Valid @RequestBody Job job) {
-        return jobRepository.save(job);
+        String error = "";
+        if(job.getDateOpened().getTime() < System.currentTimeMillis()){
+            error += "Job cannot be opened in the past\n";
+        }
+        if(job.getDateOpened().getTime() > job.getDateClosed().getTime()){
+            error += "Job open date cannot be after the job close date\n";
+        }
+        if(job.getDescription().equals(null) || job.getDescription().equals("")){
+            error += "Job description cannot be empty\n";
+        }
+        if(job.getAvailable().equals(null)){
+            job.setAvailable(false);
+        }
+        if(!job.getCustomerID().equals(null)){
+            if(!customerRepository.findOne(job.getCustomerID()).equals(null)){
+                error += "Customer does not exist\n";
+            }
+        }
+        if(error.equals("")){
+            return jobRepository.save(job);
+        }
+        else{
+            //TODO pass error message
+            ResponseEntity.badRequest().build();
+        }
     }
 
     @GetMapping(path = {"", "/all"})
@@ -63,6 +87,29 @@ public class JobController {
         }
         Job job = optionalJob.get();
 
+        String error = "";
+        if(job.getDateOpened().getTime() < System.currentTimeMillis()){
+            error += "Job cannot be opened in the past\n";
+        }
+        if(job.getDateOpened().getTime() > job.getDateClosed().getTime()){
+            error += "Job open date cannot be after the job close date\n";
+        }
+        if(job.getDescription().equals(null) || job.getDescription().equals("")){
+            error += "Job description cannot be empty";
+        }
+        if(job.getAvailable().equals(null)){
+            job.setAvailable(false);
+        }
+
+        if(error.equals("")){
+            Job updatedEmployee = jobRepository.save(job.merge(jobDetails));
+            return ResponseEntity.ok(updatedEmployee);
+        }
+        else{
+            //TODO: pass error message
+            return ResponseEntity.badRequest().build();
+        }
+
         Job updatedJob = jobRepository.save(job.merge(jobDetails));
         return ResponseEntity.ok(updatedJob);
     }
@@ -79,6 +126,22 @@ public class JobController {
         Job job = optionalJob.get();
 
         job.setAvailable(true);
+
+        Job updatedJob = jobRepository.save(job);
+
+        return ResponseEntity.ok(updatedJob);
+    }
+
+    // set a job as unavailable
+    @PutMapping("{id}/unavailable")
+    public ResponseEntity<Job> setJobAvailability(
+            @PathVariable(value = "id") Long jobId
+    ) {
+        Job job = jobRepository.findOne(jobId);
+        if (job == null) {
+            return ResponseEntity.notFound().build();
+        }
+        job.setAvailable(false);
 
         Job updatedJob = jobRepository.save(job);
 
@@ -110,7 +173,7 @@ public class JobController {
         return ResponseEntity.ok(updatedJob);
     }
 
-    // add an employee to a job
+    // add a customer to a job
     @PutMapping("{id}/customer/{customerId}")
     public ResponseEntity<Job> addCustomerToJob(
             @PathVariable(value = "id") Long jobId,
@@ -141,7 +204,41 @@ public class JobController {
             @PathVariable(value = "id") Long jobId,
             @PathVariable(value = "employeeId") Long employeeId
     ) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(null);
+        Job job = jobRepository.findOne(jobId);
+        if (job == null) {
+            return ResponseEntity.notFound().build();
+        }
+        Employee employee = employeeRepository.findOne(employeeId);
+        if (employee == null) {
+            return ResponseEntity.notFound().build();
+        }
+        job.getEmployees().delete(employee);
+
+        Job updatedJob = jobRepository.save(job);
+
+        return ResponseEntity.ok(updatedJob);
+    }
+
+    // remove a customer from a job
+    @PutMapping("{id}/customer/{customerId}")
+    public ResponseEntity<Job> deleteCustomerToJob(
+            @PathVariable(value = "id") Long jobId,
+            @PathVariable(value = "customerId") Long customerId
+    ) {
+        Job job = jobRepository.findOne(jobId);
+        if (job == null) {
+            return ResponseEntity.notFound().build();
+        }
+        Customer customer = customerRepository.findOne(customerId);
+        if (customer == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        job.deleteCustomer(customer);
+
+        Job updatedJob = jobRepository.save(job);
+
+        return ResponseEntity.ok(updatedJob);
     }
 
     @DeleteMapping("{id}")

@@ -68,6 +68,8 @@ public class Job {
         return employees;
     }
 
+    public
+
     public void setEmployees(Set<Employee> employees) {
         this.employees = employees;
     }
@@ -77,6 +79,10 @@ public class Job {
     }
 
     public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    public void deleteCustomer(Customer customer) {
         this.customer = customer;
     }
 
