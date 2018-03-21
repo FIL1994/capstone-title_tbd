@@ -20,7 +20,7 @@ public class EmergencyContact {
     private String cellPhoneNumber;
 
     @JsonIgnore
-    @OneToOne
+    @ManyToOne
     @PrimaryKeyJoinColumn
     private Employee employee;
 

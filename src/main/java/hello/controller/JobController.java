@@ -174,29 +174,29 @@ public class JobController {
     }
 
     // add a customer to a job
-    @PutMapping("{id}/customer/{customerId}")
-    public ResponseEntity<Job> addCustomerToJob(
-            @PathVariable(value = "id") Long jobId,
-            @PathVariable(value = "customerId") Long customerId
-    ) {
-        Optional<Job> optionalJob = jobRepository.findById(jobId);
-        if (!optionalJob.isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-        Job job = optionalJob.get();
-
-        Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
-        if (!optionalCustomer.isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-        Customer customer = optionalCustomer.get();
-
-        job.setCustomer(customer);
-
-        Job updatedJob = jobRepository.save(job);
-
-        return ResponseEntity.ok(updatedJob);
-    }
+//    @PutMapping("{id}/customer/{customerId}")
+//    public ResponseEntity<Job> addCustomerToJob(
+//            @PathVariable(value = "id") Long jobId,
+//            @PathVariable(value = "customerId") Long customerId
+//    ) {
+//        Optional<Job> optionalJob = jobRepository.findById(jobId);
+//        if (!optionalJob.isPresent()) {
+//            return ResponseEntity.notFound().build();
+//        }
+//        Job job = optionalJob.get();
+//
+//        Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
+//        if (!optionalCustomer.isPresent()) {
+//            return ResponseEntity.notFound().build();
+//        }
+//        Customer customer = optionalCustomer.get();
+//
+//        job.setCustomer(customer);
+//
+//        Job updatedJob = jobRepository.save(job);
+//
+//        return ResponseEntity.ok(updatedJob);
+//    }
 
     // remove an employee from a job TODO
     @DeleteMapping("{id}/employee/{employeeId}")

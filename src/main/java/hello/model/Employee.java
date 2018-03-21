@@ -16,8 +16,9 @@ public class Employee extends Person {
     private String phoneNumber;
     private String postalCode;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    private EmergencyContact emergencyContact;
+    @JsonIgnore
+    @ManyToMany(mappedBy = "employee")
+    private Set<EmergencyContact> emergencyContacts = new HashSet<>();
 
     /*
      ManyToMany relationship si managed by employees in the Job model.
@@ -89,20 +90,28 @@ public class Employee extends Person {
         this.postalCode = postalCode;
     }
 
-    public EmergencyContact getEmergencyContact() {
-        return emergencyContact;
-    }
-
-    public void setEmergencyContact(EmergencyContact emergencyContact) {
-        this.emergencyContact = emergencyContact;
-    }
-
     public Set<Job> getJobs() {
         return jobs;
     }
 
     public void setJobs(Set<Job> jobs) {
         this.jobs = jobs;
+    }
+
+    public Set<EmergencyContact> getEmergencyContacts() {
+        return emergencyContacts;
+    }
+
+    public void setEmergencyContacts(Set<EmergencyContact> emergencyContacts) {
+        this.emergencyContacts = emergencyContacts;
+    }
+
+    public Set<JobHours> getJobHours() {
+        return jobHours;
+    }
+
+    public void setJobHours(Set<JobHours> jobHours) {
+        this.jobHours = jobHours;
     }
 
     public Employee merge(Employee employeeToMerge) {

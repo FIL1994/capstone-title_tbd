@@ -22,10 +22,6 @@ public class Job {
     @JoinTable(name = "employee_assignments")
     private Set<Employee> employees = new HashSet<>();
 
-    @ManyToOne
-    @PrimaryKeyJoinColumn
-    private Customer customer;
-
     @JsonIgnore
     @OneToMany(mappedBy = "job")
     private Set<JobHours> jobHours = new HashSet<>();
@@ -80,14 +76,6 @@ public class Job {
 
     public void setEmployees(Set<Employee> employees) {
         this.employees = employees;
-    }
-
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
     }
 
     public Set<JobHours> getJobHours() {

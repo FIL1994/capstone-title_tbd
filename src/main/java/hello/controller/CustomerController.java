@@ -1,14 +1,13 @@
 package hello.controller;
 
 import hello.EmptyJsonResponse;
-import hello.model.Job;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
-import hello.model.Customer;
-import hello.repository.CustomerRepository;
+import hello.model.*;
+import hello.repository.*;
 
 import javax.validation.Valid;
 import java.util.Optional;
@@ -45,8 +44,8 @@ public class CustomerController {
     }
 
     // get all the jobs for a specific employee
-    @GetMapping("{id}/jobs")
-    public ResponseEntity<Set<Job>> getCustomersJobs(@PathVariable(value = "id") Long customerId) {
+    @GetMapping("{id}/projects")
+    public ResponseEntity<Set<Project>> getCustomersProjects(@PathVariable(value = "id") Long customerId) {
         Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
         if (!optionalCustomer.isPresent()) {
             return ResponseEntity.notFound().build();
@@ -54,7 +53,7 @@ public class CustomerController {
         Customer customer = optionalCustomer.get();
 
         // return ResponseEntity.ok().body(employee.getJobs());
-        return new ResponseEntity<>(customer.getJobs(), HttpStatus.OK);
+        return new ResponseEntity<>(customer.getProjects(), HttpStatus.OK);
     }
 
     @PutMapping("{id}")
