@@ -3,19 +3,16 @@ package hello.controller;
 import javax.validation.Valid;
 
 import hello.EmptyJsonResponse;
-import hello.model.Customer;
-import hello.model.Employee;
-import hello.repository.CustomerRepository;
-import hello.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
-import hello.model.Job;
-import hello.repository.JobRepository;
+import hello.model.*;
+import hello.repository.*;
 
 import java.util.Optional;
+import java.util.Set;
 
 @CrossOrigin
 @RestController
@@ -30,6 +27,9 @@ public class JobController {
 
     @Autowired
     private CustomerRepository customerRepository;
+
+    @Autowired
+    private MaterialRepository materialRepository;
 
     @PostMapping("")
     public ResponseEntity<?> createJob(@Valid @RequestBody Job job) {
@@ -167,6 +167,30 @@ public class JobController {
         Employee employee = optionalEmployee.get();
 
         job.getEmployees().add(employee);
+
+        Job updatedJob = jobRepository.save(job);
+
+        return ResponseEntity.ok(updatedJob);
+    }
+
+    @PutMapping("{id}/material")
+    public ResponseEntity<?> addMaterialToJob(@Valid @RequestBody Material material, @PathVariable(value ="id") Long jobId) {
+        Optional<Job> optionalJob = jobRepository.findById(jobId);
+        if (!optionalJob.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        Job job = optionalJob.get();
+
+        Material newMaterial = materialRepository.save(material);
+
+        job.getMaterials().add(newMaterial);
+
+        for(Material m : job.getMaterials()) {
+            System.out.println(m.getDescription());
+            try{
+                System.out.println(m.getId());
+            } catch(Exception e){}
+        }
 
         Job updatedJob = jobRepository.save(job);
 

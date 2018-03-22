@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @CrossOrigin
 @RestController
-@RequestMapping(path = "materials")
+@RequestMapping(path = "material")
 public class MaterialController {
     @Autowired
     private MaterialRepository materialRepository;

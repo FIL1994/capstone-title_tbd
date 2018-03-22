@@ -1,7 +1,11 @@
 package hello.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.sql.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class Project {
@@ -19,6 +23,10 @@ public class Project {
 
     @OneToOne
     private Invoice invoice;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "project")
+    private Set<Job> jobs = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -66,6 +74,14 @@ public class Project {
 
     public void setInvoice(Invoice invoice) {
         this.invoice = invoice;
+    }
+
+    public Set<Job> getJobs() {
+        return jobs;
+    }
+
+    public void setJobs(Set<Job> jobs) {
+        this.jobs = jobs;
     }
 
     public Project merge(Project projectToMerge) {

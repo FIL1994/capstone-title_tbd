@@ -30,6 +30,10 @@ public class Job {
     @OneToMany(mappedBy = "job")
     private Set<Material> materials = new HashSet<>();
 
+    @ManyToOne
+    @PrimaryKeyJoinColumn
+    private Project project;
+
     public Long getId() {
         return id;
     }
@@ -92,6 +96,14 @@ public class Job {
 
     public void setMaterials(Set<Material> materials) {
         this.materials = materials;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public Job merge(Job jobToMerge) {
