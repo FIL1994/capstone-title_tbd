@@ -28,6 +28,9 @@ public class ProjectController {
     @Autowired
     private CustomerRepository customerRepository;
 
+    @Autowired
+    private InvoiceRepository invoiceRepository;
+
     @PostMapping("")
     public ResponseEntity<?> createProject(@Valid @RequestBody Project project) {
         String error = "";
@@ -126,5 +129,22 @@ public class ProjectController {
         Project updatedJob = projectRepository.save(project);
 
         return ResponseEntity.ok(updatedJob);
+    }
+
+    @PutMapping("{id}/invoice")
+    public ResponseEntity<?> addInvoiceToProject(@Valid @RequestBody Invoice invoice, @PathVariable(value ="id") Long projectId) {
+        Optional<Project> optionalProject = projectRepository.findById(projectId);
+        if (!optionalProject.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        Project project = optionalProject.get();
+
+        Invoice newInvoice = invoiceRepository.save(invoice);
+
+        project.setInvoice(newInvoice);
+
+        Project updatedProject = projectRepository.save(project);
+
+        return ResponseEntity.ok(updatedProject);
     }
 }

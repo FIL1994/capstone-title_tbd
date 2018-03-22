@@ -185,12 +185,12 @@ public class JobController {
 
         job.getMaterials().add(newMaterial);
 
-        for(Material m : job.getMaterials()) {
-            System.out.println(m.getDescription());
-            try{
-                System.out.println(m.getId());
-            } catch(Exception e){}
-        }
+//        for(Material m : job.getMaterials()) {
+//            System.out.println(m.getDescription());
+//            try{
+//                System.out.println(m.getId());
+//            } catch(Exception e){}
+//        }
 
         Job updatedJob = jobRepository.save(job);
 

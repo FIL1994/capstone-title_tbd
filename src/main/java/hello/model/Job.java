@@ -26,7 +26,6 @@ public class Job {
     @OneToMany(mappedBy = "job")
     private Set<JobHours> jobHours = new HashSet<>();
 
-    @JsonIgnore
     @OneToMany(mappedBy = "job")
     private Set<Material> materials = new HashSet<>();
 
