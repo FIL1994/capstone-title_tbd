@@ -181,16 +181,20 @@ public class JobController {
         }
         Job job = optionalJob.get();
 
+        if(material.getId() != null) {
+            for (Material m : job.getMaterials()) {
+                if (m.getId().equals(material.getId())) {
+                    job.getMaterials().remove(m);
+                    break;
+                }
+            }
+        }
+
+        material.setJob(job);
+
         Material newMaterial = materialRepository.save(material);
 
         job.getMaterials().add(newMaterial);
-
-//        for(Material m : job.getMaterials()) {
-//            System.out.println(m.getDescription());
-//            try{
-//                System.out.println(m.getId());
-//            } catch(Exception e){}
-//        }
 
         Job updatedJob = jobRepository.save(job);
 

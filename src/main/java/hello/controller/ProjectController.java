@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Optional;
+import java.util.Set;
 
 @CrossOrigin
 @RestController
@@ -70,6 +71,16 @@ public class ProjectController {
         Project project = optionalProject.get();
 
         return ResponseEntity.ok().body(project);
+    }
+
+    @GetMapping("{id}/jobs")
+    public @ResponseBody
+    Iterable<Job> getJobsForProject(@PathVariable(value = "id") Long projectId) {
+        Optional<Project> optionalProject = projectRepository.findById(projectId);
+
+        Project project = optionalProject.get();
+
+        return project.getJobs();
     }
 
     @PutMapping("{id}")
@@ -139,6 +150,7 @@ public class ProjectController {
         }
         Project project = optionalProject.get();
 
+        invoice.setProject(project);
         Invoice newInvoice = invoiceRepository.save(invoice);
 
         project.setInvoice(newInvoice);
