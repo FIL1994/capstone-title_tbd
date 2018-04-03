@@ -20,3 +20,5 @@ gradle-and-springboot.iml
 /bin/
 capstone.iml
 *.log
+
+.DS_Store
