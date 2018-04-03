@@ -2,6 +2,7 @@ package hello.security;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -9,6 +10,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
 @Configuration
@@ -19,14 +22,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private AuthenticationEntryPoint authEntryPoint;
 
     @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        UserDetails user = User.withDefaultPasswordEncoder().username("phil").password("password").roles("ADMIN").build();
+    private UserDetailsService userService;
 
-        auth
-                .inMemoryAuthentication()
-                .withUser(User.withDefaultPasswordEncoder().username("bob").password("password").roles("ADMIN").build())
-                .withUser(User.withDefaultPasswordEncoder().username("frank").password("password").roles("USER").build())
-                .withUser(user);
+    @Autowired
+    public void configureAuth(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(userService).passwordEncoder(passwordEncoder());
     }
 
     @Override
@@ -43,5 +43,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //                .and()
 //                .logout()
 //                .permitAll();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new PasswordEncoder() {
+            @Override
+            public String encode(CharSequence rawPassword) {
+                return rawPassword.toString();
+            }
+
+            @Override
+            public boolean matches(CharSequence rawPassword, String encodedPassword) {
+                return rawPassword.toString().equals(encodedPassword);
+            }
+        };
     }
 }
