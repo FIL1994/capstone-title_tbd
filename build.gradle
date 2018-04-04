@@ -30,7 +30,7 @@ repositories {
 
 
 ext {
-    springCloudVersion = 'Finchley.BUILD-RELEASE'
+    springCloudVersion = 'Finchley.BUILD-SNAPSHOT'
 }
 sourceCompatibility = 1.8
 
@@ -38,14 +38,12 @@ dependencies {
     // JPA Data (We are going to use Repositories, Entities, Hibernate, etc...)
     compile 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-//    compile('org.springframework.boot:spring-boot-starter-security')
+    compile('org.springframework.boot:spring-boot-starter-security')
     compile("org.springframework.boot:spring-boot-starter-web")
-    compile 'org.hibernate:hibernate-core:5.2.13.Final'
+    compile 'org.hibernate:hibernate-core:5.2.16.Final'
 
     // Use MySQL Connector-J
     compile 'mysql:mysql-connector-java'
-
-
 
     testCompile("junit:junit")
 }
