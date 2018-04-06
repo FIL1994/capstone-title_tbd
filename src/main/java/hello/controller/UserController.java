@@ -40,7 +40,7 @@ public class UserController {
 
     @PostMapping
     public @ResponseBody
-    User createuser(@Valid @RequestBody User user) {
+    User createUser(@Valid @RequestBody User user) {
         return userService.save(user);
     }
 
