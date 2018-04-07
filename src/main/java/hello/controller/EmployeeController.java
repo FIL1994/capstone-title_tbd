@@ -2,15 +2,25 @@ package hello.controller;
 
 import hello.EmptyJsonResponse;
 import hello.model.Job;
+import org.apache.commons.csv.CSVFormat;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
+import org.apache.commons.csv.CSVPrinter;
 
 import hello.model.Employee;
 import hello.repository.EmployeeRepository;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
@@ -84,5 +94,55 @@ public class EmployeeController {
 
         employeeRepository.delete(employee);
         return new ResponseEntity<>(new EmptyJsonResponse(), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/csv", produces="text/csv")
+    @ResponseBody
+    public FileSystemResource toCsv(HttpServletResponse response) throws IOException {
+        Iterable<Employee> employees = employeeRepository.findAll();
+        Iterator<Employee> employeeIterator = employees.iterator();
+
+        String fileName = java.util.UUID.randomUUID() + ".csv";
+
+        try (
+                BufferedWriter writer = Files.newBufferedWriter(Paths.get(fileName));
+
+                CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
+                        .withHeader(
+                                "ID", "First Name", "Last Name", "Email", "Birth Date", "Address",
+                                "City", "Postal Code", "Payroll Start Date",
+                                "Phone Number"
+                        ));
+        ) {
+            while(employeeIterator.hasNext()) {
+                Employee employee = employeeIterator.next();
+                csvPrinter.printRecord(
+                        String.valueOf(employee.getId()), employee.getFirstName(), employee.getLastName(),
+                        employee.getEmail(), employee.getBirthDate() == null ? "" : employee.getBirthDate().toString(),
+                        employee.getAddress(), employee.getCity(), employee.getPostalCode(),
+                        employee.getPayrollStartDate() == null ? "" : employee.getPayrollStartDate().toString(),
+                        employee.getPhoneNumber()
+                );
+            }
+            csvPrinter.flush();
+        }
+
+        File file = new File(fileName);
+        FileSystemResource fileSystemResource = new FileSystemResource(file);
+//        file.delete();
+
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        file.delete();
+                    }
+                },
+                5000
+        );
+
+        return fileSystemResource;
     }
 }
