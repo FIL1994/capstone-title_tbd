@@ -38,6 +38,12 @@ public class UserController {
         return new UserInfo(user.getUsername(), user.getAuthorities());
     }
 
+    @GetMapping("/all")
+    public @ResponseBody
+    Iterable<User> getAllCustomers() {
+        return userRepository.findAll();
+    }
+
     @PostMapping
     public @ResponseBody
     User createUser(@Valid @RequestBody User user) {
