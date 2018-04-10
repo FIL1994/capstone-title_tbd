@@ -292,22 +292,27 @@ public class JobController {
         ) {
             while(jobIterator.hasNext()) {
                 Job job = jobIterator.next();
+                Project project = job.getProject();
 
-                Boolean hasProject = job.getProject() != null;
-                Boolean hasCustomer = hasProject && job.getProject().getCustomer() != null;
+                Boolean hasProject = project != null;
+
+                Customer customer = !hasProject ? null : project.getCustomer();
+
+                Boolean hasCustomer = customer != null;
 
                 csvPrinter.printRecord(
                         String.valueOf(job.getId()), job.getDescription(),
                         job.getDateOpened() == null ? "" : job.getDateOpened(),
                         job.getDateClosed() == null ? "" : job.getDateClosed(),
                         String.valueOf(job.getAvailable()),
-                        !hasProject ? "" : String.valueOf(job.getProject().getId()),
-                        !hasProject ? "" : job.getProject().getDescription(),
-                        !hasCustomer ? "" : String.valueOf(job.getProject().getCustomer().getId()),
-                        !hasCustomer ? "" : job.getProject().getCustomer().getFirstName(),
-                        !hasCustomer ? "" : job.getProject().getCustomer().getLastName()
+                        !hasProject ? "" : String.valueOf(project.getId()),
+                        !hasProject ? "" : project.getDescription(),
+                        !hasCustomer ? "" : String.valueOf(customer.getId()),
+                        !hasCustomer ? "" : customer.getFirstName(),
+                        !hasCustomer ? "" : customer.getLastName()
                 );
             }
+            csvPrinter.flush();
         }
 
         File file = new File(fileName);

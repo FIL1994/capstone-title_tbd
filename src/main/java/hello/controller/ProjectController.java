@@ -3,12 +3,22 @@ package hello.controller;
 import hello.EmptyJsonResponse;
 import hello.model.*;
 import hello.repository.*;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
@@ -158,5 +168,58 @@ public class ProjectController {
         Project updatedProject = projectRepository.save(project);
 
         return ResponseEntity.ok(updatedProject);
+    }
+
+    @GetMapping(value = "/csv", produces="text/csv")
+    @ResponseBody
+    public FileSystemResource toCsv(HttpServletResponse response) throws IOException {
+        Iterable<Project> projects = projectRepository.findAll();
+        Iterator<Project> projectIterator = projects.iterator();
+
+        String fileName = "projects-" +  java.util.UUID.randomUUID() + ".csv";
+
+        try (
+                BufferedWriter writer = Files.newBufferedWriter(Paths.get(fileName));
+
+                CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
+                        .withHeader(
+                                "ID", "Description", "Date Opened", "Date Closed",
+                                "Customer ID", "Customer First Name", "Customer Last Name"
+                        ))
+        ) {
+            while(projectIterator.hasNext()) {
+                Project project = projectIterator.next();
+                Customer customer = project.getCustomer();
+
+                Boolean hasCustomer = customer != null;
+
+                csvPrinter.printRecord(
+                        String.valueOf(project.getId()), project.getDescription(),
+                        project.getDateOpened() == null ? "" : project.getDateOpened(),
+                        project.getDateClosed() == null ? "" : project.getDateClosed(),
+                        !hasCustomer ? "" : customer.getId(),
+                        !hasCustomer ? "" : customer.getFirstName(),
+                        !hasCustomer ? "" : customer.getLastName()
+                );
+            }
+            csvPrinter.flush();
+        }
+
+        File file = new File(fileName);
+        FileSystemResource fileSystemResource = new FileSystemResource(file);
+
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        file.delete();
+                    }
+                },
+                5000
+        );
+
+        return fileSystemResource;
     }
 }
