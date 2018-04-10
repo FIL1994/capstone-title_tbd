@@ -102,7 +102,7 @@ public class EmployeeController {
         Iterable<Employee> employees = employeeRepository.findAll();
         Iterator<Employee> employeeIterator = employees.iterator();
 
-        String fileName = java.util.UUID.randomUUID() + ".csv";
+        String fileName = "employees-" +  java.util.UUID.randomUUID() + ".csv";
 
         try (
                 BufferedWriter writer = Files.newBufferedWriter(Paths.get(fileName));
@@ -112,7 +112,7 @@ public class EmployeeController {
                                 "ID", "First Name", "Last Name", "Email", "Birth Date", "Address",
                                 "City", "Postal Code", "Payroll Start Date",
                                 "Phone Number"
-                        ));
+                        ))
         ) {
             while(employeeIterator.hasNext()) {
                 Employee employee = employeeIterator.next();
@@ -129,7 +129,6 @@ public class EmployeeController {
 
         File file = new File(fileName);
         FileSystemResource fileSystemResource = new FileSystemResource(file);
-//        file.delete();
 
         response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
 
