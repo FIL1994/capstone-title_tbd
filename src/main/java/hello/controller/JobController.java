@@ -1,9 +1,13 @@
 package hello.controller;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import hello.EmptyJsonResponse;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +15,13 @@ import org.springframework.http.ResponseEntity;
 import hello.model.*;
 import hello.repository.*;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
@@ -260,5 +271,60 @@ public class JobController {
 
         jobRepository.delete(job);
         return new ResponseEntity<>(new EmptyJsonResponse(), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/csv", produces="text/csv")
+    @ResponseBody
+    public FileSystemResource toCsv(HttpServletResponse response) throws IOException {
+        Iterable<Job> jobs = jobRepository.findAll();
+        Iterator<Job> jobIterator = jobs.iterator();
+
+        String fileName = "jobs-" +  java.util.UUID.randomUUID() + ".csv";
+
+        try (
+                BufferedWriter writer = Files.newBufferedWriter(Paths.get(fileName));
+
+                CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
+                        .withHeader(
+                                "ID", "Description", "Date Opened", "Date Closed", "Available", "Project ID",
+                                "Project Description", "Customer ID", "Customer First Name", "Customer Last Name"
+                        ))
+        ) {
+            while(jobIterator.hasNext()) {
+                Job job = jobIterator.next();
+
+                Boolean hasProject = job.getProject() != null;
+                Boolean hasCustomer = hasProject && job.getProject().getCustomer() != null;
+
+                csvPrinter.printRecord(
+                        String.valueOf(job.getId()), job.getDescription(),
+                        job.getDateOpened() == null ? "" : job.getDateOpened(),
+                        job.getDateClosed() == null ? "" : job.getDateClosed(),
+                        String.valueOf(job.getAvailable()),
+                        !hasProject ? "" : String.valueOf(job.getProject().getId()),
+                        !hasProject ? "" : job.getProject().getDescription(),
+                        !hasCustomer ? "" : String.valueOf(job.getProject().getCustomer().getId()),
+                        !hasCustomer ? "" : job.getProject().getCustomer().getFirstName(),
+                        !hasCustomer ? "" : job.getProject().getCustomer().getLastName()
+                );
+            }
+        }
+
+        File file = new File(fileName);
+        FileSystemResource fileSystemResource = new FileSystemResource(file);
+
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        file.delete();
+                    }
+                },
+                5000
+        );
+
+        return fileSystemResource;
     }
 }
