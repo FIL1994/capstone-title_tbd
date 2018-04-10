@@ -42,6 +42,7 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-web")
     compile 'org.hibernate:hibernate-core:5.2.16.Final'
     compile 'commons-codec:commons-codec:1.11'
+    compile 'org.apache.commons:commons-csv:1.5'
 
     // Use MySQL Connector-J
     compile 'mysql:mysql-connector-java'
