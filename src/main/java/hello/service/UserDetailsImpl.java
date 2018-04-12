@@ -22,10 +22,22 @@ public class UserDetailsImpl implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Collection<GrantedAuthority> authorities = new HashSet<>();
         Set<Role> roles = user.getRoles();
-        for(Role role: roles) {
-         authorities.add(new SimpleGrantedAuthority(role.getRole()));
+        for (Role role : roles) {
+            authorities.add(new SimpleGrantedAuthority(role.getRole()));
         }
         return authorities;
+    }
+
+    public Long getId() {
+        return user.getId();
+    }
+
+    public String getFullName() {
+        return user.getFullName();
+    }
+
+    public Set<Role> getRoles() {
+        return user.getRoles();
     }
 
     @Override

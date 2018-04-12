@@ -50,6 +50,33 @@ public class UserController {
         return userService.save(user);
     }
 
+    @PutMapping
+    public  @ResponseBody User updateUser(@Valid @RequestBody User user) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+
+        user.setId(userDetails.getId());
+
+        if(user.getEmail() == null) {
+            user.setEmail(userDetails.getUsername());
+        }
+
+        if(user.getFullName() == null) {
+            user.setFullName(userDetails.getFullName());
+        }
+
+        if(user.getRoles() == null) {
+            user.setRoles(userDetails.getRoles());
+        }
+
+        if(user.getPassword() == null) {
+            user.setPassword(userDetails.getPassword());
+        }
+
+        return userService.save(user);
+    }
+
     // get all user info
     /*
     @GetMapping("info")
