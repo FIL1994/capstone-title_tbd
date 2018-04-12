@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @CrossOrigin
@@ -87,7 +89,14 @@ public class UserController {
     User updateUserRoles(@PathVariable(value = "id") Long userId, @RequestBody Set<Role> roles) {
         User user = userService.findById(userId);
 
-        user.setRoles(roles);
+        Set<Role> newRoles = new HashSet<>();
+
+        for (Role r : roles) {
+            Optional<Role> role = roleRepository.findById(r.getId());
+            role.ifPresent(newRoles::add);
+        }
+
+        user.setRoles(newRoles);
 
         return userService.save(user);
     }
