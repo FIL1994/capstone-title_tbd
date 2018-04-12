@@ -1,5 +1,6 @@
 package hello.controller;
 
+import hello.model.Role;
 import hello.model.User;
 import hello.repository.RoleRepository;
 import hello.repository.UserRepository;
@@ -7,6 +8,7 @@ import hello.service.UserDetailsImpl;
 import hello.service.UserService;
 import hello.service.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Collection;
+import java.util.Set;
 
 @CrossOrigin
 @RestController
@@ -38,12 +41,14 @@ public class UserController {
         return new UserInfo(user.getUsername(), user.getAuthorities());
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/all")
     public @ResponseBody
     Iterable<User> getAllCustomers() {
         return userRepository.findAll();
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
     public @ResponseBody
     User createUser(@Valid @RequestBody User user) {
@@ -51,28 +56,38 @@ public class UserController {
     }
 
     @PutMapping
-    public  @ResponseBody User updateUser(@Valid @RequestBody User user) {
+    public @ResponseBody
+    User updateUser(@Valid @RequestBody User user) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
 
         user.setId(userDetails.getId());
 
-        if(user.getEmail() == null) {
+        if (user.getEmail() == null) {
             user.setEmail(userDetails.getUsername());
         }
 
-        if(user.getFullName() == null) {
+        if (user.getFullName() == null) {
             user.setFullName(userDetails.getFullName());
         }
 
-        if(user.getRoles() == null) {
-            user.setRoles(userDetails.getRoles());
-        }
+        user.setRoles(userDetails.getRoles());
 
-        if(user.getPassword() == null) {
+        if (user.getPassword() == null) {
             user.setPassword(userDetails.getPassword());
         }
+
+        return userService.save(user);
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PutMapping("/roles/{id}")
+    public @ResponseBody
+    User updateUserRoles(@PathVariable(value = "id") Long userId, @RequestBody Set<Role> roles) {
+        User user = userService.findById(userId);
+
+        user.setRoles(roles);
 
         return userService.save(user);
     }
