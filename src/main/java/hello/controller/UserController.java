@@ -101,6 +101,17 @@ public class UserController {
         return userService.save(user);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping("/{id}/resetpassword")
+    public @ResponseBody
+    User resetUserPassword(@PathVariable(value = "id") Long userId) {
+        User user = userService.findById(userId);
+
+        user.setPassword("password");
+
+        return userService.save(user);
+    }
+
     // get all user info
     /*
     @GetMapping("info")
